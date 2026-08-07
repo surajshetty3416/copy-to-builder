@@ -6,8 +6,10 @@
 	const MAX_RAW_HTML = 24000;
 
 	// Wrapper styles that carry no visual decision of their own, so the wrapper can
-	// be folded into its only child instead of adding a layer to the tree.
-	const MERGEABLE = new Set([
+	// be folded into its only child instead of adding a layer to the tree. Inherited
+	// properties belong here too: with a single child, moving one down to that child
+	// renders identically.
+	const MERGEABLE_OWN = [
 		"display",
 		"flexDirection",
 		"boxSizing",
@@ -16,7 +18,11 @@
 		"position",
 		"flexShrink",
 		"flexGrow",
-	]);
+	];
+
+	function isMergeable(property) {
+		return MERGEABLE_OWN.includes(property) || ns.styles.INHERITED_PROPERTIES.has(property);
+	}
 
 	class BlockBuilder {
 		constructor(styleReader, options = {}) {
@@ -201,7 +207,7 @@
 	function foldSingleChild(block) {
 		if (!block.children || block.children.length !== 1) return block;
 		if (block.innerHTML || block.attributes || block.blockName || block.classes) return block;
-		if (Object.keys(block.baseStyles).some((property) => !MERGEABLE.has(property))) return block;
+		if (Object.keys(block.baseStyles).some((property) => !isMergeable(property))) return block;
 		if (block.tabletStyles || block.mobileStyles) return block;
 
 		const child = block.children[0];

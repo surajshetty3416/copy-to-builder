@@ -224,13 +224,24 @@
 			for (const property of TRACKED) {
 				const value = this.viewportValue(el, property) || raw[property];
 				if (value === "" || value === undefined) continue;
-				if (value === defaults[property]) continue;
-				if (INHERITED.has(property) && inherited && inherited[property] === value) continue;
+				if (this.isRedundant(property, value, defaults, inherited)) continue;
 				const normalized = normalizeValue(property, value, el);
 				if (normalized === null) continue;
 				styles[camel(property)] = normalized;
 			}
 			return prune(collapseShorthands(styles));
+		}
+
+		// An inherited property has no meaningful per-tag default: what the probe
+		// reports is only what the blank frame handed down, not something the tag asks
+		// for. Comparing against it drops black text that sits inside a white-on-dark
+		// section, which then inherits the section's colour and disappears. What such a
+		// property has to be measured against is the ancestor the block will inherit
+		// from, and only when there is one.
+		isRedundant(property, value, defaults, inherited) {
+			if (!INHERITED.has(property)) return value === defaults[property];
+			if (inherited) return inherited[property] === value;
+			return value === defaults[property];
 		}
 
 		// Viewport units are absolute by the time they are computed, which would nail
@@ -391,6 +402,7 @@
 		if (!normalized || (normalized === "none" && property === "background-image")) return null;
 		if (normalized.includes("url(")) normalized = absolutizeCssUrls(normalized, document.baseURI);
 
+		if (property === "transform") return relativeTranslate(normalized, el);
 		if (property === "font-family") return firstFamily(normalized);
 		if (property.endsWith("color") || property === "color") return toHex(normalized);
 		if (property === "background-image" || property === "box-shadow" || property === "text-shadow") {
@@ -398,6 +410,32 @@
 		}
 		if (property === "transition-property" && normalized === "all") return null;
 		return simplifyCalc(normalized);
+	}
+
+	// A carousel is a flex track shifted by whole viewport widths, and the browser
+	// reports that shift in pixels measured at the width the copy was taken at. On a
+	// canvas of any other width every slide lands askew, showing a sliver of the next
+	// one. A translate percentage is relative to the element's own box, so the same
+	// shift keeps its meaning at any width.
+	function relativeTranslate(value, el) {
+		const numbers = value.match(/^matrix(3d)?\(([^)]+)\)$/);
+		if (!numbers) return value;
+
+		const parts = numbers[2].split(",").map((part) => parseFloat(part));
+		const is3d = Boolean(numbers[1]);
+		const identity = is3d ? [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0] : [1, 0, 0, 1];
+		const head = parts.slice(0, identity.length);
+		// anything rotated or scaled cannot be restated as a percentage
+		if (head.some((part, index) => part !== identity[index])) return value;
+
+		const [x, y] = is3d ? [parts[12], parts[13]] : [parts[4], parts[5]];
+		const width = el.offsetWidth;
+		const height = el.offsetHeight;
+		if (!x && !y) return "none";
+		if ((x && !width) || (y && !height)) return value;
+
+		const toPercent = (offset, size) => (offset ? `${round((offset / size) * 100)}%` : "0");
+		return `translate(${toPercent(x, width)}, ${toPercent(y, height)})`;
 	}
 
 	// Utility frameworks compute spacing as calc(.25rem * 6). Builder's inputs can
@@ -451,7 +489,10 @@
 	// something else (currentColor, the element's own box) rather than from a
 	// decision the site made.
 	function prune(styles) {
-		if (!styles.transform && !styles.rotate) delete styles.transformOrigin;
+		// an origin only matters for a rotation or a scale, and the reported one is a
+		// pixel pair measured at the size the copy was taken at
+		const spins = styles.rotate || /rotate|scale|skew|matrix/.test(styles.transform || "");
+		if (!spins) delete styles.transformOrigin;
 		if (!styles.textDecorationLine || styles.textDecorationLine === "none") {
 			delete styles.textDecorationColor;
 		}
@@ -544,6 +585,7 @@
 		StyleReader,
 		BREAKPOINT_WIDTH,
 		isTrackedProperty: (property) => TRACKED.has(property),
+		INHERITED_PROPERTIES: new Set([...INHERITED].map(camel)),
 		toHex,
 		resolveVars,
 	};
