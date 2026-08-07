@@ -18,15 +18,16 @@ within the same browser, which is what lets a copy on any site paste into Builde
 
 The value is JSON. Builder reads these keys:
 
-| Key                      | Meaning                                                                                                                                                                    |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `blocks`                 | Array with one root block. `originalElement: "body"` and `blockId: "root"` make it a page rather than a fragment.                                                          |
-| `components`             | Builder Component docs (`name`, `component_id`, `component_name`, `block` as a JSON string).                                                                               |
-| `variables`              | Builder Token docs (`name`, `token_name`, `value`, `type`, `group`). Styles reference them as `var(--<name>)`.                                                             |
-| `sourceURL`              | Origin of the copy. When it differs from the Builder origin, Builder rehashes component, token, and script ids so nothing collides. This is always true here.              |
-| `pageDoc`                | Builder Page fields. Present means "this is a page", which is what triggers the new page or replace prompt. Leave `blocks` out of it: Builder fills that in from `blocks`. |
-| `pageScripts`            | Builder Client Script docs (`name`, `script_type` of `JavaScript` or `CSS`, `script`).                                                                                     |
-| `pageDoc.client_scripts` | Which of those the page uses, as `{ builder_script, idx }`.                                                                                                                |
+| Key                      | Meaning                                                                                                                                                                      |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `blocks`                 | Array with one root block. `originalElement: "body"` and `blockId: "root"` make it a page rather than a fragment.                                                            |
+| `components`             | Builder Component docs (`name`, `component_id`, `component_name`, `block` as a JSON string).                                                                                 |
+| `variables`              | Builder Token docs (`name`, `token_name`, `value`, `type`, `group`). Styles reference them as `var(--<name>)`.                                                               |
+| `sourceURL`              | Origin of the copy. When it differs from the Builder origin, Builder rehashes component, token, and script ids so nothing collides. This is always true here.                |
+| `pageDoc`                | Builder Page fields. Present means "this is a page", which is what triggers the new page or replace prompt. Leave `blocks` out of it: Builder fills that in from `blocks`.   |
+| `pageScripts`            | Builder Client Script docs (`name`, `script_type` of `JavaScript` or `CSS`, `script`).                                                                                       |
+| `pageDoc.client_scripts` | Which of those the page uses, as `{ builder_script, idx }`.                                                                                                                  |
+| `fonts`                  | Webfonts the blocks use, as `{ family, url, weight, style }`. Builder offers to download each one and recreate it as a User Font. One file per family is all Builder stores. |
 
 Unknown keys are ignored, so adding to the payload is safe. Renaming or removing one of
 the above is not.

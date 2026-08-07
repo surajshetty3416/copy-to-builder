@@ -32,17 +32,18 @@ from it. What it relies on Builder for is written down in [CONTRACT.md](CONTRACT
 
 ## What comes across
 
-|                     |                                                                                                                                                                                                         |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Structure           | Semantic containers, text, links, buttons, images, video, inline SVG, forms and inputs. Text lands in text blocks so it stays inline editable.                                                          |
-| Styles              | Every style the page actually applies, resolved from the live page, compared against Builder's own reset so only real differences are copied.                                                           |
-| Responsive          | Tablet and mobile styles read out of the page's own media queries and written to Builder's tablet and mobile breakpoints.                                                                               |
-| Tokens              | The repeated palette and typography become Builder Tokens named by role (Background, Text, Primary, Border), and the styles reference them with `var(...)`.                                             |
-| Components          | Runs of three or more identical sibling blocks (cards, nav items, tiles) become one Builder Component with per-instance overrides for the text and images that differ.                                  |
-| Page settings       | Title, meta description, social image, favicon, and the webfont links the page needs. Indexing is turned off, since a copy should not compete with the original.                                        |
-| Layer names         | Blocks are named from their role or class (Hero, Card, Nav, Footer) so the layers panel is readable.                                                                                                    |
-| Hover and animation | The rules a block cannot hold (`:hover`, `:focus`, `::before`, `@keyframes`) travel as a CSS Builder Client Script, with `var()` resolved and only the class names those rules need kept on the blocks. |
-| Page JavaScript     | Off by default. When on, the page's inline scripts become a JavaScript Builder Client Script you can read and edit in Builder's Code panel before publishing.                                           |
+|                     |                                                                                                                                                                                                                     |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Structure           | Semantic containers, text, links, buttons, images, video, inline SVG, forms and inputs. Text lands in text blocks so it stays inline editable.                                                                      |
+| Styles              | Every style the page actually applies, resolved from the live page, compared against Builder's own reset so only real differences are copied.                                                                       |
+| Responsive          | Tablet and mobile styles read out of the page's own media queries and written to Builder's tablet and mobile breakpoints.                                                                                           |
+| Tokens              | The repeated palette and typography become Builder Tokens named by role (Background, Text, Primary, Border), and the styles reference them with `var(...)`.                                                         |
+| Components          | Runs of three or more identical sibling blocks (cards, nav items, tiles) become one Builder Component with per-instance overrides for the text and images that differ.                                              |
+| Page settings       | Title, meta description, social image, favicon, and the webfont links the page needs. Indexing is turned off, since a copy should not compete with the original.                                                    |
+| Layer names         | Blocks are named from their role or class (Hero, Card, Nav, Footer) so the layers panel is readable.                                                                                                                |
+| Hover and animation | The rules a block cannot hold (`:hover`, `:focus`, `::before`, `@keyframes`) travel as a CSS Builder Client Script, with `var()` resolved and only the class names those rules need kept on the blocks.             |
+| Page JavaScript     | Off by default. When on, the page's inline scripts become a JavaScript Builder Client Script you can read and edit in Builder's Code panel before publishing.                                                       |
+| Fonts               | Webfonts the page uses are listed with the file each one loads. Builder offers to download them into your site as User Fonts, which puts them in the font picker and stops the copy depending on the original site. |
 
 ## How the conversion works
 
@@ -71,8 +72,14 @@ from it. What it relies on Builder for is written down in [CONTRACT.md](CONTRACT
   remote scripts are listed as a comment rather than imported.
 - `position: fixed` becomes `position: sticky`, which keeps the intent without pinning
   the element over the canvas while you edit.
-- Images keep pointing at the site you copied from. Builder offers to import them into
-  your site right after the paste.
+- Images and fonts keep pointing at the site you copied from until you accept the import
+  Builder offers right after the paste. Fonts especially are worth importing: a self
+  hosted font is usually served without the CORS headers a cross origin webfont needs, so
+  it will often fail to load until it lives on your site.
+- Builder stores one file per font family, so each family comes across in its most
+  ordinary face (upright, closest to regular) and other weights are synthesised by the
+  browser. A variable font is preferred when the page offers one, since it covers
+  every weight in a single file.
 - Very large pages stop at 4000 blocks and say so.
 
 ## Files

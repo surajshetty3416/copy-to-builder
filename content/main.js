@@ -78,6 +78,8 @@
 			}
 			payload.pageScripts = docs;
 			payload.stats.scripts = docs.length;
+			payload.fonts = pickFontFaces(this.cascade?.fontFaces, builder.fonts);
+			payload.stats.fonts = payload.fonts.length;
 			if (payload.pageDoc) {
 				payload.pageDoc.client_scripts = docs.map((doc, index) => ({
 					builder_script: doc.name,
@@ -140,6 +142,34 @@
 
 	function count(value, noun) {
 		return `${value} ${noun}${value === 1 ? "" : "s"}`;
+	}
+
+	// Builder stores one file per family, so each family that the blocks actually use
+	// contributes its most ordinary face: upright, and as close to regular as it has.
+	function pickFontFaces(fontFaces = [], usedFamilies = new Set()) {
+		const used = new Set([...usedFamilies].map((family) => family.toLowerCase()));
+		const best = new Map();
+
+		for (const face of fontFaces) {
+			if (!face.url || !used.has(face.family.toLowerCase())) continue;
+			const key = face.family.toLowerCase();
+			const current = best.get(key);
+			if (!current || faceScore(face) < faceScore(current)) best.set(key, face);
+		}
+		return [...best.values()].map((face) => ({
+			family: face.family,
+			url: face.url,
+			weight: face.weight,
+			style: face.style,
+		}));
+	}
+
+	function faceScore(face) {
+		const italic = /italic|oblique/i.test(face.style) ? 100 : 0;
+		// a variable face covers every weight, so it beats any single one
+		if (/\s/.test(face.weight.trim())) return italic;
+		const weight = face.weight.trim() === "normal" ? 400 : parseInt(face.weight, 10) || 400;
+		return italic + Math.abs(weight - 400) / 100 + 1;
 	}
 
 	function requestBaseline() {

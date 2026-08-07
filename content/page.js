@@ -37,7 +37,8 @@
 				parts.push(`<link rel="${link.getAttribute("rel")}" href="${absoluteUrl(href)}" crossorigin>`);
 			}
 			if (fontFaces.length) {
-				parts.push(`<style>\n${fontFaces.join("\n")}\n</style>`);
+				const rules = fontFaces.map((face) => face.css).join("\n");
+				parts.push(`<style>\n${rules}\n</style>`);
 			}
 			const html = parts.join("\n");
 			return html.length > MAX_HEAD_HTML ? html.slice(0, MAX_HEAD_HTML) : html;

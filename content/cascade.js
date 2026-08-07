@@ -46,14 +46,28 @@
 					this.keyframes.set(rule.name, rule.cssText);
 				} else if (rule instanceof CSSSupportsRule || rule.cssRules) {
 					if (rule instanceof CSSFontFaceRule) {
-						this.fontFaces.push(absolutizeCssUrls(rule.cssText, base));
+						this.addFontFace(rule, base);
 						continue;
 					}
 					this.addRules(Array.from(rule.cssRules), base, conditions, media);
 				} else if (rule instanceof CSSFontFaceRule) {
-					this.fontFaces.push(absolutizeCssUrls(rule.cssText, base));
+					this.addFontFace(rule, base);
 				}
 			}
+		}
+
+		// Kept both as CSS, for pages that keep loading the fonts from where they came
+		// from, and as descriptors, so Builder can recreate them as its own fonts.
+		addFontFace(rule, base) {
+			const family = unquote(rule.style.getPropertyValue("font-family"));
+			if (!family) return;
+			this.fontFaces.push({
+				css: absolutizeCssUrls(rule.cssText, base),
+				family,
+				weight: rule.style.getPropertyValue("font-weight") || "400",
+				style: rule.style.getPropertyValue("font-style") || "normal",
+				url: bestFontUrl(rule.style.getPropertyValue("src"), base),
+			});
 		}
 
 		addStyleRule(rule, base, conditions, media) {
@@ -405,6 +419,27 @@
 
 	function unescapeSelector(token) {
 		return token.replace(/\\(.)/g, "$1");
+	}
+
+	function unquote(value) {
+		return (value || "").trim().replace(/^["']|["']$/g, "");
+	}
+
+	// woff2 first: it is the smallest and every browser Builder targets reads it.
+	const FORMAT_RANK = { woff2: 0, woff: 1, "opentype-variations": 2, opentype: 3, truetype: 4 };
+
+	function bestFontUrl(src, base) {
+		const sources = [];
+		for (const [, , url, , format] of (src || "").matchAll(
+			/url\((['"]?)([^'")]+)\1\)(?:\s*format\((['"]?)([^'")]+)\3\))?/g,
+		)) {
+			if (url.startsWith("data:")) continue;
+			const extension = (url.split("?")[0].split(".").pop() || "").toLowerCase();
+			sources.push({ url, rank: FORMAT_RANK[format] ?? FORMAT_RANK[extension] ?? 9 });
+		}
+		if (!sources.length) return "";
+		sources.sort((a, b) => a.rank - b.rank);
+		return ns.util.absoluteUrl(sources[0].url, base);
 	}
 
 	function specificityOf(selector) {
