@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="stylesheet" href="popup.css" />
+	</head>
+	<body>
+		<header class="header">
+			<h1>Copy to Frappe Builder</h1>
+			<p class="site" id="site"></p>
+		</header>
+
+		<div class="actions">
+			<button class="button primary" id="copy-page">Copy whole page</button>
+			<button class="button" id="pick-element">Pick an element</button>
+		</div>
+
+		<fieldset class="options">
+			<legend>Include</legend>
+			<label>
+				<input type="checkbox" id="opt-responsive" />
+				Tablet and mobile styles
+			</label>
+			<label>
+				<input type="checkbox" id="opt-tokens" />
+				Colors and fonts as Builder Tokens
+			</label>
+			<label>
+				<input type="checkbox" id="opt-components" />
+				Repeated blocks as Components
+			</label>
+			<label>
+				<input type="checkbox" id="opt-pageSettings" />
+				Page title, meta, and fonts
+			</label>
+			<label>
+				<input type="checkbox" id="opt-interactiveStyles" />
+				Hover, focus, and animation CSS
+			</label>
+			<label>
+				<input type="checkbox" id="opt-pageScripts" />
+				<span>
+					Page JavaScript
+					<em>(review before publishing)</em>
+				</span>
+			</label>
+		</fieldset>
+
+		<label class="site-url">
+			<span>Builder site</span>
+			<input type="url" id="builder-url" placeholder="https://your-site.com" spellcheck="false" />
+			<small>Optional. Compares styles against your site's own reset.</small>
+		</label>
+
+		<p class="status" id="status">Copy, then press Cmd/Ctrl + V on a Builder canvas.</p>
+
+		<script src="shared/inject.js"></script>
+		<script src="popup.js"></script>
+	</body>
+</html>

@@ -1,0 +1,142 @@
+:root {
+	color-scheme: light dark;
+	--ink: #171717;
+	--muted: #6b7280;
+	--line: #e5e7eb;
+	--surface: #fff;
+	--accent: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--ink: #f3f4f6;
+		--muted: #9ca3af;
+		--line: #2f2f2f;
+		--surface: #1c1c1c;
+		--accent: #f3f4f6;
+	}
+}
+
+body {
+	width: 288px;
+	margin: 0;
+	padding: 16px;
+	background: var(--surface);
+	color: var(--ink);
+	font:
+		400 13px/1.5 -apple-system,
+		BlinkMacSystemFont,
+		"Segoe UI",
+		sans-serif;
+}
+
+h1 {
+	margin: 0;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.site {
+	margin: 2px 0 0;
+	color: var(--muted);
+	font-size: 12px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.actions {
+	display: grid;
+	gap: 8px;
+	margin: 14px 0;
+}
+
+.button {
+	padding: 8px 12px;
+	border: 1px solid var(--line);
+	border-radius: 8px;
+	background: transparent;
+	color: var(--ink);
+	font: inherit;
+	font-weight: 500;
+	cursor: pointer;
+}
+
+.button:hover {
+	border-color: var(--muted);
+}
+
+.button.primary {
+	border-color: var(--accent);
+	background: var(--accent);
+	color: var(--surface);
+}
+
+.button:disabled {
+	opacity: 0.55;
+	cursor: progress;
+}
+
+.options {
+	display: grid;
+	gap: 7px;
+	margin: 0;
+	padding: 10px 12px;
+	border: 1px solid var(--line);
+	border-radius: 8px;
+}
+
+.options legend {
+	padding: 0 4px;
+	color: var(--muted);
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.options label {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	cursor: pointer;
+}
+
+.site-url {
+	display: grid;
+	gap: 4px;
+	margin-top: 12px;
+}
+
+.site-url span {
+	color: var(--muted);
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.site-url input {
+	padding: 7px 9px;
+	border: 1px solid var(--line);
+	border-radius: 7px;
+	background: transparent;
+	color: var(--ink);
+	font: inherit;
+	font-size: 12px;
+}
+
+.site-url small {
+	color: var(--muted);
+	font-size: 11px;
+	line-height: 1.4;
+}
+
+.status {
+	margin: 12px 0 0;
+	color: var(--muted);
+	font-size: 12px;
+	line-height: 1.5;
+}
+
+.status.error {
+	color: #d13b30;
+}

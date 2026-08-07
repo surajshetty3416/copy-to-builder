@@ -1,0 +1,43 @@
+{
+	"manifest_version": 3,
+	"name": "Copy to Frappe Builder",
+	"version": "1.0.0",
+	"description": "Copy any web page or element and paste it into Frappe Builder as native, editable blocks.",
+	"permissions": ["scripting", "storage", "clipboardWrite", "contextMenus", "activeTab"],
+	"host_permissions": ["<all_urls>"],
+	"background": {
+		"service_worker": "background.js"
+	},
+	"action": {
+		"default_popup": "popup.html",
+		"default_title": "Copy to Frappe Builder",
+		"default_icon": {
+			"16": "icons/icon-16.png",
+			"32": "icons/icon-32.png",
+			"48": "icons/icon-48.png",
+			"128": "icons/icon-128.png"
+		}
+	},
+	"icons": {
+		"16": "icons/icon-16.png",
+		"32": "icons/icon-32.png",
+		"48": "icons/icon-48.png",
+		"128": "icons/icon-128.png"
+	},
+	"commands": {
+		"copy-page": {
+			"suggested_key": {
+				"default": "Ctrl+Shift+Y",
+				"mac": "Command+Shift+Y"
+			},
+			"description": "Copy this page for Frappe Builder"
+		},
+		"pick-element": {
+			"suggested_key": {
+				"default": "Ctrl+Shift+U",
+				"mac": "Command+Shift+U"
+			},
+			"description": "Pick an element to copy for Frappe Builder"
+		}
+	}
+}
