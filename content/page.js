@@ -37,11 +37,19 @@
 				parts.push(`<link rel="${link.getAttribute("rel")}" href="${absoluteUrl(href)}" crossorigin>`);
 			}
 			if (fontFaces.length) {
-				const rules = fontFaces.map((face) => face.css).join("\n");
-				parts.push(`<style>\n${rules}\n</style>`);
+				// whole rules only: a blunt slice can cut mid-rule and leave the style
+				// tag unclosed, which swallows the rest of the published page
+				const budget = MAX_HEAD_HTML - parts.join("\n").length - "<style>\n\n</style>".length;
+				const rules = [];
+				let used = 0;
+				for (const face of fontFaces) {
+					if (used + face.css.length + 1 > budget) break;
+					rules.push(face.css);
+					used += face.css.length + 1;
+				}
+				if (rules.length) parts.push(`<style>\n${rules.join("\n")}\n</style>`);
 			}
-			const html = parts.join("\n");
-			return html.length > MAX_HEAD_HTML ? html.slice(0, MAX_HEAD_HTML) : html;
+			return parts.join("\n");
 		}
 	}
 
