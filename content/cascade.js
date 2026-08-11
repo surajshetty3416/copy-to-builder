@@ -66,6 +66,7 @@
 				family,
 				weight: rule.style.getPropertyValue("font-weight") || "400",
 				style: rule.style.getPropertyValue("font-style") || "normal",
+				unicodeRange: rule.style.getPropertyValue("unicode-range") || "",
 				url: bestFontUrl(rule.style.getPropertyValue("src"), base),
 			});
 		}

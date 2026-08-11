@@ -152,6 +152,9 @@
 
 		for (const face of fontFaces) {
 			if (!face.url || !used.has(face.family.toLowerCase())) continue;
+			// a subset without basic latin (Google lists latin-ext first) downloads
+			// fine and then draws nothing but fallback glyphs
+			if (!coversBasicLatin(face.unicodeRange)) continue;
 			const key = face.family.toLowerCase();
 			const current = best.get(key);
 			if (!current || faceScore(face) < faceScore(current)) best.set(key, face);
@@ -162,6 +165,19 @@
 			weight: face.weight,
 			style: face.style,
 		}));
+	}
+
+	// "A" (U+41) stands in for the whole basic latin block: any subset that can
+	// draw ordinary text declares it, and latin-ext or cyrillic ones do not.
+	function coversBasicLatin(unicodeRange) {
+		if (!unicodeRange) return true;
+		return unicodeRange.split(",").some((part) => {
+			const match = part.trim().match(/^U\+([0-9A-Fa-f?]+)(?:-([0-9A-Fa-f]+))?$/);
+			if (!match) return false;
+			const start = parseInt(match[1].replace(/\?/g, "0"), 16);
+			const end = match[2] ? parseInt(match[2], 16) : parseInt(match[1].replace(/\?/g, "F"), 16);
+			return start <= 0x41 && 0x41 <= end;
+		});
 	}
 
 	function faceScore(face) {
