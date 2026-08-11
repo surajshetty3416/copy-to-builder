@@ -65,7 +65,7 @@
 			const block = this.baseBlock(el, descriptor, inheritFrom);
 
 			if (descriptor.kind === "text") {
-				block.innerHTML = ns.elements.inlineHtml(el);
+				block.innerHTML = ns.elements.inlineHtml(el, (family) => this.trackFont(family));
 			} else if (descriptor.kind === "svg" || descriptor.kind === "raw") {
 				this.fillRawBlock(block, el, descriptor);
 			} else if (descriptor.kind === "container") {

@@ -207,29 +207,33 @@
 
 		// Inline markup Builder's text editor understands, with everything the source
 		// site hung off it (classes, inline styles, tracking attributes) removed.
-		inlineHtml(el) {
+		inlineHtml(el, onFont) {
 			const clone = el.cloneNode(true);
-			const anchorStyles = new Map();
-			const sources = el.querySelectorAll("a");
-			clone.querySelectorAll("a").forEach((node, index) => {
-				const style = linkStyle(sources[index]);
-				if (style) anchorStyles.set(node, style);
-			});
+			const inlineStyles = new Map();
+			const collect = (selector, styleOf) => {
+				const sources = el.querySelectorAll(selector);
+				clone.querySelectorAll(selector).forEach((node, index) => {
+					const style = styleOf(sources[index]);
+					if (style) inlineStyles.set(node, style);
+				});
+			};
+			collect("a", linkStyle);
+			collect("span", (span) => spanStyle(span, onFont));
 
-			this.cleanInline(clone, anchorStyles);
+			this.cleanInline(clone, inlineStyles);
 			const html = clone.innerHTML.replace(/\s+/g, " ").trim();
 			return html === "" ? el.textContent.trim() : html;
 		}
 
-		cleanInline(node, anchorStyles) {
+		cleanInline(node, inlineStyles) {
 			for (const child of Array.from(node.children)) {
 				const tag = child.tagName.toLowerCase();
 				if (!KEEP_INLINE.has(tag)) {
 					child.replaceWith(...Array.from(child.childNodes));
 					continue;
 				}
-				this.cleanInline(child, anchorStyles);
-				const style = anchorStyles.get(child);
+				this.cleanInline(child, inlineStyles);
+				const style = inlineStyles.get(child);
 				for (const attribute of Array.from(child.attributes)) {
 					const keep = tag === "a" && ["href", "target"].includes(attribute.name);
 					if (!keep) child.removeAttribute(attribute.name);
@@ -299,6 +303,26 @@
 		const computed = getComputedStyle(anchor);
 		const parts = [`color: ${computed.color}`, `text-decoration: ${computed.textDecorationLine}`];
 		if (Number(computed.fontWeight) >= 500) parts.push(`font-weight: ${computed.fontWeight}`);
+		return parts.join("; ");
+	}
+
+	// A span inside a heading or paragraph often owes its look (a display face, an
+	// italic, an accent colour) to a class that will not travel, so whatever differs
+	// rides along as an inline style. The diff is against the span's own parent, so
+	// the per-letter spans a text-split animation leaves behind stay attribute-less
+	// and get unwrapped.
+	function spanStyle(span, onFont) {
+		if (!span || !span.parentElement) return "";
+		const computed = getComputedStyle(span);
+		const parent = getComputedStyle(span.parentElement);
+		const parts = [];
+		if (computed.fontFamily !== parent.fontFamily) {
+			parts.push(`font-family: ${computed.fontFamily}`);
+			onFont && onFont(ns.styles.firstFamily(computed.fontFamily));
+		}
+		if (computed.fontStyle !== parent.fontStyle) parts.push(`font-style: ${computed.fontStyle}`);
+		if (computed.fontWeight !== parent.fontWeight) parts.push(`font-weight: ${computed.fontWeight}`);
+		if (computed.color !== parent.color) parts.push(`color: ${ns.styles.toHex(computed.color)}`);
 		return parts.join("; ");
 	}
 

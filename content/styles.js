@@ -588,5 +588,6 @@
 		INHERITED_PROPERTIES: new Set([...INHERITED].map(camel)),
 		toHex,
 		resolveVars,
+		firstFamily,
 	};
 })(window.BuilderCopy);
