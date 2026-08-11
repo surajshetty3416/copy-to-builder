@@ -3,14 +3,7 @@
 A Chrome extension that copies any web page, or any single element on it, and pastes it
 into Frappe Builder as native, editable blocks.
 
-![A copied page open as editable blocks in Frappe Builder](docs/pasted-into-builder.png)
-
-A page copied from [a Webflow template](https://nueskin.webflow.io/) and published from
-Builder, next to the original:
-
-| The original site                     | The copy, published from Builder        |
-| ------------------------------------- | --------------------------------------- |
-| ![Original site](docs/original-site.png) | ![Published copy](docs/published-copy.png) |
+![The frappe.io/builder page, copied and open as editable blocks in Frappe Builder](docs/pasted-into-builder.png)
 
 Nothing is exported or uploaded. The page is converted in the tab you are looking at and
 written to the clipboard under the same custom type Builder's own copy uses
