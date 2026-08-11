@@ -83,14 +83,23 @@
 				}
 				const code = script.textContent.trim();
 				if (!code || TRACKERS.test(code) || FRAMEWORK_PAYLOAD.test(code)) continue;
+				// an inline loader whose only job is to inject a third party script
+				// would reinstate exactly what the src filter above refuses (usually
+				// a tag manager reporting to the copied site's account)
+				const loaderTargets = remoteLoaderUrls(code, this.host);
+				if (loaderTargets) {
+					external.push(...loaderTargets);
+					continue;
+				}
 				inline.push(code);
 			}
 			if (!inline.length && !external.length) return null;
 
+			const notImported = [...new Set(external)];
 			const header = [
 				`/* Scripts copied from ${this.host}.`,
 				" * They ran against that site's markup, so selectors may need updating.",
-				external.length ? ` * Not imported: ${external.slice(0, 12).join(", ")}` : "",
+				notImported.length ? ` * Not imported: ${notImported.slice(0, 12).join(", ")}` : "",
 				" */",
 			]
 				.filter(Boolean)
@@ -152,6 +161,16 @@
 		} catch (error) {
 			return "page";
 		}
+	}
+
+	// A snippet counts as a loader when it creates a script element and every
+	// absolute URL it mentions points off-site.
+	function remoteLoaderUrls(code, host) {
+		if (!/createElement\(\s*["']script["']\s*\)/.test(code)) return null;
+		const urls = [...code.matchAll(/https?:\/\/[^\s"'`\\)]+/g)].map((match) => match[0]);
+		if (!urls.length) return null;
+		const remote = urls.filter((url) => safeHost(url) !== host);
+		return remote.length === urls.length ? remote : null;
 	}
 
 	ns.ScriptExtractor = ScriptExtractor;
