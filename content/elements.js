@@ -260,7 +260,8 @@
 				const value = clone.getAttribute?.(attribute);
 				if (value) clone.setAttribute(attribute, absoluteUrl(value));
 			}
-			return clone.outerHTML;
+			// a var() in the markup only exists on the source site
+			return ns.styles.resolveVars(clone.outerHTML, el);
 		}
 
 		blockName(el, kind) {

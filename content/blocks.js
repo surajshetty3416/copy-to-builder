@@ -240,15 +240,19 @@
 
 	function inlineSvg(el, styles) {
 		const clone = el.cloneNode(true);
-		const width = clone.getAttribute("width");
-		const height = clone.getAttribute("height");
+		// an svg sized by a CSS class loses it when the class is stripped below, so
+		// fall back to the box the browser actually rendered
+		const rect = el.getBoundingClientRect();
+		const width = clone.getAttribute("width") || (rect.width ? String(Math.round(rect.width)) : "");
+		const height = clone.getAttribute("height") || (rect.height ? String(Math.round(rect.height)) : "");
 		if (width && !styles.width) styles.width = /^\d+$/.test(width) ? `${width}px` : width;
 		if (height && !styles.height) styles.height = /^\d+$/.test(height) ? `${height}px` : height;
 		clone.removeAttribute("width");
 		clone.removeAttribute("height");
 		clone.removeAttribute("class");
 		if (clone.querySelector("image")) return "";
-		return clone.outerHTML;
+		// fill="var(--x)" and friends only resolve on the source site
+		return ns.styles.resolveVars(clone.outerHTML, el);
 	}
 
 	ns.BlockBuilder = BlockBuilder;
