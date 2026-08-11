@@ -3,6 +3,15 @@
 A Chrome extension that copies any web page, or any single element on it, and pastes it
 into Frappe Builder as native, editable blocks.
 
+![A copied page open as editable blocks in Frappe Builder](docs/pasted-into-builder.png)
+
+A page copied from [a Webflow template](https://nueskin.webflow.io/) and published from
+Builder, next to the original:
+
+| The original site                     | The copy, published from Builder        |
+| ------------------------------------- | --------------------------------------- |
+| ![Original site](docs/original-site.png) | ![Published copy](docs/published-copy.png) |
+
 Nothing is exported or uploaded. The page is converted in the tab you are looking at and
 written to the clipboard under the same custom type Builder's own copy uses
 (`builder-copied-blocks`), so pasting is just Cmd/Ctrl + V on a Builder canvas.
@@ -101,12 +110,3 @@ content/page.js      page settings and webfonts
 content/picker.js    element picker overlay and toasts
 content/main.js      orchestration, messaging, clipboard write
 ```
-
-## Working on it
-
-There is no build step. Edit a file, hit reload on `chrome://extensions`, and the next
-copy uses it. `.prettierrc` matches Builder's formatting.
-
-Everything this depends on in Builder is listed in [CONTRACT.md](CONTRACT.md). The
-short version: the `builder-copied-blocks` clipboard type, the shape of the payload, and
-Builder's reset, which is fetched from your site when you configure one.
