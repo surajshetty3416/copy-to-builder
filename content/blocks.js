@@ -186,9 +186,9 @@
 				if (color && color !== "transparent" && color !== "#000000") root.baseStyles.backgroundColor = color;
 			}
 			root.baseStyles.width = "100%";
-			delete root.baseStyles.margin;
-			delete root.baseStyles.marginTop;
-			delete root.baseStyles.marginLeft;
+			// A body margin survives: it is measured against a reset that zeroes it, so
+			// whatever is left was asked for, and "margin: 0 auto" is what centres the
+			// page. Dropping half of it pins the whole column to the left edge.
 		}
 
 		emptyRoot() {

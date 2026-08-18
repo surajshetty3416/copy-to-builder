@@ -104,6 +104,27 @@
 		fieldset: "Fieldset",
 	};
 
+	// Tags that group other blocks. They keep their own element even when they happen
+	// to hold nothing but text, because collapsing them would lose the grouping.
+	const GROUPING_TAGS = new Set([
+		"body",
+		"html",
+		"head",
+		"ul",
+		"ol",
+		"dl",
+		"table",
+		"thead",
+		"tbody",
+		"tfoot",
+		"tr",
+		"form",
+		"fieldset",
+		"select",
+		"optgroup",
+		"picture",
+	]);
+
 	class ElementReader {
 		// What kind of Builder block this element should become.
 		classify(el) {
@@ -120,11 +141,30 @@
 
 		isTextual(el) {
 			const tag = el.tagName.toLowerCase();
-			if (!TEXT_TAGS.has(tag) && !TEXT_FALLBACK.has(tag) && tag !== "button") return false;
+			if (GROUPING_TAGS.has(tag)) return false;
 			if (!el.textContent.trim()) return false;
 			if (el.querySelector("img, svg, video, iframe, input, textarea, table")) return false;
 			if (this.wrapsSingleLink(el)) return false;
-			return Array.from(el.children).every((child) => isInlineTag(child.tagName.toLowerCase()));
+			if (!this.laysOutAsText(el)) return false;
+			if (TEXT_TAGS.has(tag) || TEXT_FALLBACK.has(tag) || tag === "button") return true;
+			// Any other tag earns it by being pure inline flow. A nav reading
+			// "Home · About · Feed" is one line on the page, and keeping it a container
+			// turns each link and separator into a block that stacks vertically.
+			return el.children.length > 0;
+		}
+
+		// Whether the children flow as text or sit as boxes, which the page decides and
+		// the tag name only guesses at. A grid or flex row lays its children out in
+		// columns, and an inline-block child carries its own padding and background;
+		// flattening either into one text block throws that away.
+		laysOutAsText(el) {
+			const children = Array.from(el.children);
+			if (!children.length) return true;
+			if (/flex|grid/.test(getComputedStyle(el).display)) return false;
+			return children.every((child) => {
+				const display = getComputedStyle(child).display;
+				return display === "inline" || display === "contents";
+			});
 		}
 
 		// A list item or wrapper whose whole content is one link keeps more of its
